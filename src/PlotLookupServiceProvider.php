@@ -19,7 +19,6 @@ class PlotLookupServiceProvider extends PackageServiceProvider
             ->name('plot-lookup')
             ->hasConfigFile()
             ->hasViews()
-            ->hasMigration('create_plot_lookup_table')
             ->hasCommand(PlotLookupCommand::class);
     }
 }
