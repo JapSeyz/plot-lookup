@@ -3,8 +3,8 @@
 namespace Japseyz\PlotLookup\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Orchestra\Testbench\TestCase as Orchestra;
 use Japseyz\PlotLookup\PlotLookupServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {
