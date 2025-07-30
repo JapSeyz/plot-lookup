@@ -6,15 +6,15 @@ class Building
 {
     public string $number;
     public string $usage;
-    public string $builtAt;
-    public string $wallMaterial;
-    public string $rootMaterial;
-    public string $areaTotal;
-    public string $areaResidential;
-    public string $areaGarage;
+    public string $built_at;
+    public string $wall_material;
+    public string $roof_material;
+    public string $area_total;
+    public string $area_residential;
+    public string $area_garage;
     public string $floors;
-    public string $heatingDevice;
-    public string $heatingType;
+    public string $heating_device;
+    public string $heating_type;
     public string $x;
     public string $y;
     public string $icon;

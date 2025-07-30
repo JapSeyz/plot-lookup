@@ -12,19 +12,19 @@ use function str_contains;
 
 class Datafordeler
 {
-    public function find(string $address, string $city, string $postalCode): ?Address
+    public function find(string $address): ?Address
     {
         $client = $this->getClient();
         $client->baseUrl('https://api.dataforsyningen.dk/');
-        $data = $client->get('/datavask/adresser', [
-            'betegnelse' => "$address, $postalCode $city",
-        ]);
+        $uuid = $client->get('/datavask/adresser', [
+            'betegnelse' => $address,
+        ])->json('resultater.0.adresse.id');
 
-        if (! isset($data['id'])) {
+        if (! $uuid) {
             return null;
         }
 
-        return $this->address($data['id']);
+        return $this->address($uuid);
     }
 
     public function address(string $uuid): Address
@@ -44,31 +44,31 @@ class Datafordeler
         [$lng, $lat] = $data['adgangspunkt']['koordinater'];
 
         return new Address([
-            'fullAddress'           => $data['adressebetegnelse'],
-            'street'                => $data['vejstykke']['navn'],
-            'number'                => $data['husnr'],
-            'streetCode'            => $data['vejstykke']['kode'],
-            'city'                  => $data['postnummer']['navn'],
-            'postalCode'            => $data['postnummer']['nr'],
-            'cityLower'             => $data['supplerendebynavn'],
-            'municipality'          => $data['kommune']['navn'],
-            'region'                => $data['region']['navn'],
-            'section'               => $data['landsdel']['navn'],
-            'courtJurisdiction'     => $data['retskreds']['navn'],
-            'policeJurisdiction'    => $data['politikreds']['navn'],
-            'politicalJurisdiction' => $data['opstillingskreds']['navn'],
-            'politicalMajor'        => $data['storkreds']['navn'],
-            'politicalRegion'       => $data['valglandsdel']['navn'],
-            'zone'                  => $data['zone'] ?? '',
-            'hoa'                   => $data['jordstykke']['ejerlav']['navn'] ?? '',
-            'hoaId'                 => $data['jordstykke']['ejerlav']['kode'] ?? '',
-            'esr'                   => $data['jordstykke']['esrejendomsnr'] ?? '',
-            'cadastre'              => $data['jordstykke']['matrikelnr'] ?? '',
-            'lng'                   => (float) $lng,
-            'lat'                   => (float) $lat,
-            'bridged'               => (int) ($data['brofast'] ?? 0),
-            'plot'                  => (int) ($plot ?? 0),
-            'mapId'                 => $uuid,
+            'full_address'           => $data['adressebetegnelse'],
+            'street'                 => $data['vejstykke']['navn'],
+            'number'                 => $data['husnr'],
+            'street_code'            => $data['vejstykke']['kode'],
+            'city'                   => $data['postnummer']['navn'],
+            'postal_code'            => $data['postnummer']['nr'],
+            'city_lower'             => $data['supplerendebynavn'],
+            'municipality'           => $data['kommune']['navn'],
+            'region'                 => $data['region']['navn'],
+            'section'                => $data['landsdel']['navn'],
+            'court_jurisdiction'     => $data['retskreds']['navn'],
+            'police_jurisdiction'    => $data['politikreds']['navn'],
+            'political_jurisdiction' => $data['opstillingskreds']['navn'],
+            'political_major'        => $data['storkreds']['navn'],
+            'political_region'       => $data['valglandsdel']['navn'],
+            'zone'                   => $data['zone'] ?? '',
+            'hoa'                    => $data['jordstykke']['ejerlav']['navn'] ?? '',
+            'hoa_id'                 => $data['jordstykke']['ejerlav']['kode'] ?? '',
+            'esr'                    => $data['jordstykke']['esrejendomsnr'] ?? '',
+            'cadastre'               => $data['jordstykke']['matrikelnr'] ?? '',
+            'lng'                    => (float) $lng,
+            'lat'                    => (float) $lat,
+            'bridged'                => (int) ($data['brofast'] ?? 0),
+            'plot'                   => (int) ($plot ?? 0),
+            'map_id'                 => $uuid,
         ]);
     }
 
@@ -90,24 +90,30 @@ class Datafordeler
             if (! ($building['byg007Bygningsnummer'] ?? null)) {
                 continue;
             }
+            if (! ($building['byg038SamletBygningsareal'] ?? $building['byg041BebyggetAreal'] ?? null)) {
+                continue;
+            }
             $point = $building['byg404Koordinat'] ?? null;
-            [$x, $y] = explode(' ', substr($point, 6, -1));
+            if ($point) {
+                [$x, $y] = explode(' ', substr($point, 6, -1));
+            }
 
-            $building[] = new Building([
-                'number'          => $building['byg007Bygningsnummer'],
-                'usage'           => $this->translateCode('BygAnvendelse', $building['byg021BygningensAnvendelse'] ?? null),
-                'builtAt'         => $building['byg026Opførelsesår'] ?? '',
-                'wallMaterial'    => $this->translateCode('YdervaeggenesMateriale', $building['byg032YdervæggensMateriale'] ?? null),
-                'roofMaterial'    => $this->translateCode('Tagdaekningsmateriale', $building['byg032YdervæggensMateriale'] ?? null),
-                'areaTotal'       => $building['byg038SamletBygningsareal'] ?? $building['byg041BebyggetAreal'] ?? '',
-                'areaResidential' => $building['byg039BygningensSamledeBoligAreal'] ?? $building['byg038SamletBygningsareal'] ?? $building['byg041BebyggetAreal'] ?? '',
-                'areaGarage'      => $building['byg042ArealIndbyggetGarage'] ?? '',
-                'floors'          => $building['byg054AntalEtager'] ?? '',
-                'heatingDevice'   => $this->translateCode('EnhVarmeinstallation', $building['byg056Varmeinstallation'] ?? null),
-                'heatingType'     => $this->translateCode('Opvarmningsmiddel', $building['byg057Opvarmningsmiddel'] ?? null),
-                'x'               => (float) ($x ?? 0),
-                'y'               => (float) ($y ?? 0),
-                'icon'            => $this->icon($building['byg021BygningensAnvendelse'] ?? null),
+            $buildings[] = new Building([
+                'number'           => $building['byg007Bygningsnummer'],
+                'usage'            => $this->translateCode('BygAnvendelse', $building['byg021BygningensAnvendelse'] ?? null),
+                'built_at'         => $building['byg026Opførelsesår'] ?? '',
+                'wall_material'    => $this->translateCode('YdervaeggenesMateriale', $building['byg032YdervæggensMateriale'] ?? null),
+                'roof_material'    => $this->translateCode('Tagdaekningsmateriale', $building['byg033Tagdækningsmateriale'] ?? null),
+                'area_total'       => $building['byg038SamletBygningsareal'] ?? $building['byg041BebyggetAreal'] ?? '',
+                'area_residential' => $building['byg039BygningensSamledeBoligAreal'] ?? $building['byg038SamletBygningsareal'] ?? $building['byg041BebyggetAreal'] ?? '',
+                'area_garage'      => $building['byg042ArealIndbyggetGarage'] ?? '',
+                'floors'           => $building['byg054AntalEtager'] ?? '',
+                'heating_device'   => $this->translateCode('EnhVarmeinstallation', $building['byg056Varmeinstallation'] ?? null),
+                'heating_type'     => $this->translateCode('Opvarmningsmiddel', $building['byg057Opvarmningsmiddel'] ?? null),
+                'x'                => (float) ($x ?? 0),
+                'y'                => (float) ($y ?? 0),
+                'icon'             => $this->translateCodeToIcon($building['byg021BygningensAnvendelse'] ?? null),
+                ''
             ]);
         }
 
@@ -116,7 +122,7 @@ class Datafordeler
         return $buildings;
     }
 
-    protected function icon(?string $code): string
+    protected function translateCodeToIcon(?string $code): string
     {
         if ($code === null) {
             return '';

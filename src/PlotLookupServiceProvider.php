@@ -12,6 +12,8 @@ class PlotLookupServiceProvider extends PackageServiceProvider
         $package
             ->name('plot-lookup')
             ->hasConfigFile()
+            ->hasAssets()
+            ->hasRoutes('web')
             ->hasViews();
     }
 }

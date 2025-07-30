@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Frames;
+namespace Japseyz\PlotLookup\Http\Controllers;
 
-use App\Http\Controllers\BaseController;
 use Illuminate\View\View;
 use Japseyz\PlotLookup\Services\DK\Datafordeler;
 use function mb_strtoupper;
 use function method_exists;
 use function view;
 
-class MapController extends BaseController
+class MapController
 {
     protected string $country;
     protected string $address;
@@ -38,11 +37,16 @@ class MapController extends BaseController
     protected function DK(): View
     {
         $service = new Datafordeler();
-        $data = $service->address($this->address);
-        $data['buildings'] = $service->buildings($data['plot']);
+        $address = $service->find($this->address);
 
-        return view('frames.maps.dk.bbr', [
-            'plot' => $data
+        if (! $address) {
+            abort(404, 'Address not found');
+        }
+
+        $address->buildings = $service->buildings($address->plot);
+
+        return view('plot-lookup::dk', [
+            'plot' => $address
         ]);
     }
 }
