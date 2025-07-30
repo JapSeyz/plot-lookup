@@ -1,6 +1,6 @@
 {
     "name": "japseyz/plot-lookup",
-    "description": "This is my package plot-lookup",
+    "description": "Used to lookup plots in the danish land register.",
     "keywords": [
         "Jesper Jacobsen",
         "laravel",
