@@ -2,7 +2,6 @@
 
 namespace Japseyz\PlotLookup;
 
-use Japseyz\PlotLookup\Commands\PlotLookupCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
