@@ -4,6 +4,7 @@ namespace Japseyz\PlotLookup\Http\Controllers;
 
 use Illuminate\View\View;
 use Japseyz\PlotLookup\Services\DK\Datafordeler;
+
 use function mb_strtoupper;
 use function method_exists;
 use function view;
@@ -11,6 +12,7 @@ use function view;
 class MapController
 {
     protected string $country;
+
     protected string $address;
 
     public function show(string $country, string $address): View
@@ -36,7 +38,7 @@ class MapController
 
     protected function DK(): View
     {
-        $service = new Datafordeler();
+        $service = new Datafordeler;
         $address = $service->find($this->address);
 
         if (! $address) {
@@ -46,7 +48,7 @@ class MapController
         $address->buildings = $service->buildings($address->plot);
 
         return view('plot-lookup::dk', [
-            'plot' => $address
+            'plot' => $address,
         ]);
     }
 }

@@ -8,6 +8,6 @@ return [
         'datafordeler' => [
             'username' => env('DATAFORDELER_USERNAME', ''),
             'password' => env('DATAFORDELER_PASSWORD', ''),
-        ]
+        ],
     ],
 ];
