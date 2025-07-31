@@ -57,7 +57,7 @@
             markers: [
                 @foreach($plot->buildings as $building)
                 {
-                    id: {{ $building->number }},
+                    id: '{{ $building->number }}',
                     x: {{ $building->x }},
                     y: {{ $building->y }},
                     titel: '{{ $building->usage }}',
@@ -84,10 +84,17 @@
                 var area = document.getElementById('tooltip-area')
                 var roof = document.getElementById('tooltip-roof')
                 var heating = document.getElementById('tooltip-heating')
-                title.innerHTML = marker.titel + ' <span style="color: #333">(' + marker.built + ')</span>'
-                area.innerHTML = 'Samlet areal: <b>' + marker.area + ' m²</b>'
-                roof.innerHTML = 'Tagmateriale: ' + '<b>' + marker.roof + '</b>'
-                heating.innerHTML = 'Varmeinstallation: ' + '<b>' + marker.heating + '</b>'
+                if (marker.id.startsWith('T')) {
+                    title.innerHTML = marker.titel + ' <span style="color: #333">(' + marker.built + ')</span>'
+                    area.innerHTML = 'Effekt: <b>' + marker.area + ' kWh</b>'
+                    roof.innerHTML = ''
+                    heating.innerHTML = ''
+                } else {
+                    title.innerHTML = marker.titel + ' <span style="color: #333">(' + marker.built + ')</span>'
+                    area.innerHTML = 'Samlet areal: <b>' + marker.area + ' m²</b>'
+                    roof.innerHTML = 'Tagmateriale: ' + '<b>' + marker.roof + '</b>'
+                    heating.innerHTML = 'Varmeinstallation: ' + '<b>' + marker.heating + '</b>'
+                }
                 tooltip.style.display = 'block'
             }.bind(this),
             onMarkerUnHovered: function (markers, e) {
